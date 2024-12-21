@@ -11,7 +11,7 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String nome;
 
     @Column(name = "valor")
@@ -27,13 +27,17 @@ public class Produto {
             inverseJoinColumns = @JoinColumn(name = "pedido_id")) //coluna que refere a chave primaria de pedido
     private List<Pedido> pedidos;
 
+    @ManyToOne
+    @JoinColumn(name = "fornecedor_id") //cria a coluna que define a chave estrangeira
+    private Fornecedor fornecedor;
 
     public Produto() {}
 
-    public Produto(String nome, Double preco, Categoria categoria) {
+    public Produto(String nome, Double preco, Categoria categoria, Fornecedor fornecedor) {
         this.nome = nome;
         this.preco = preco;
         this.categoria = categoria;
+        this.fornecedor = fornecedor;
     }
 
     public Long getId() {

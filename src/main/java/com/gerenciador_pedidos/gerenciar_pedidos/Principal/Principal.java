@@ -2,9 +2,11 @@ package com.gerenciador_pedidos.gerenciar_pedidos.Principal;
 
 
 import com.gerenciador_pedidos.gerenciar_pedidos.model.Categoria;
+import com.gerenciador_pedidos.gerenciar_pedidos.model.Fornecedor;
 import com.gerenciador_pedidos.gerenciar_pedidos.model.Pedido;
 import com.gerenciador_pedidos.gerenciar_pedidos.model.Produto;
 import com.gerenciador_pedidos.gerenciar_pedidos.repository.CategoriaRepository;
+import com.gerenciador_pedidos.gerenciar_pedidos.repository.FornecedorRepository;
 import com.gerenciador_pedidos.gerenciar_pedidos.repository.PedidoRepository;
 import com.gerenciador_pedidos.gerenciar_pedidos.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +25,15 @@ public class Principal {
     private final ProdutoRepository repositorioProd;
     private final PedidoRepository repositorioPed;
     private final CategoriaRepository repositorioCat;
+    private final FornecedorRepository repositorioFor;
 
 
     @Autowired
-    public Principal(ProdutoRepository repositorioProd, PedidoRepository repositorioPed, CategoriaRepository repositorioCat) {
+    public Principal(ProdutoRepository repositorioProd, PedidoRepository repositorioPed, CategoriaRepository repositorioCat, FornecedorRepository repositorioFor) {
         this.repositorioProd = repositorioProd;
         this.repositorioPed = repositorioPed;
         this.repositorioCat = repositorioCat;
+        this.repositorioFor = repositorioFor;
     }
 
 
@@ -41,6 +45,7 @@ public class Principal {
                     1 - Inserir produto
                     2 - Inserir categoria
                     3 - Inserir pedido
+                    4 - Inserir fornecedor
                     0 - Sair                                 
                     """;
 
@@ -57,6 +62,9 @@ public class Principal {
                     break;
                 case 3:
                     inserePedido();
+                    break;
+                case 4:
+                    insereFornecedor();
                     break;
                 case 0:
                     System.out.println("Saindo...");
@@ -77,22 +85,33 @@ public void insereProduto() {
         Double preco = scan.nextDouble();
 
         System.out.print("Informe o ID da categoria: ");
-        Long id = scan.nextLong();
+        Long idCategoria = scan.nextLong();
 
         //limpa o buffer
         scan.nextLine();
 
         //faz a busca da categoria para verificar se ela existe
-        Optional<Categoria> categoriaOptional = repositorioCat.findById(id);
+        Optional<Categoria> categoriaOptional = repositorioCat.findById(idCategoria);
         if (categoriaOptional.isEmpty()) {
             System.out.println("Categoria inexistente.\n");
             return;
         }
-
         Categoria categoria = categoriaOptional.get();
 
+        //recebe o ID do fornecedor e verifica se ele existe
+        System.out.print("Informe o ID do fornecedor: ");
+        Long idFornecedor = scan.nextLong();
+
+        Optional<Fornecedor> fornecedorOptional = repositorioFor.findById(idFornecedor);
+        if (fornecedorOptional.isEmpty()) {
+            System.out.println("Fornecedor inexistente.\n");
+            return;
+        }
+        Fornecedor fornecedor = fornecedorOptional.get();
+
+
         //cria e salva o produto
-        Produto produto = new Produto(nome, preco, categoria);
+        Produto produto = new Produto(nome, preco, categoria, fornecedor);
         repositorioProd.save(produto);
 
         System.out.println("Produto inserido com sucesso!\n");
@@ -110,9 +129,6 @@ public void insereProduto() {
     }
 
     public void inserePedido(){
-        System.out.print("Informe um id para o pedido: ");
-        Long id = scan.nextLong();
-        scan.nextLine(); //para limpar o buffer
         LocalDate data = LocalDate.now();
 
         System.out.println("Informe a lista de IDs dos produtos (separados por espaço): ");
@@ -129,7 +145,7 @@ public void insereProduto() {
             return;
         }
 
-        Pedido pedido = new Pedido(id, data);
+        Pedido pedido = new Pedido(data);
         pedido.setProdutos(produtos); //associa os produtos ao pedido
 
 
@@ -144,5 +160,13 @@ public void insereProduto() {
         repositorioProd.saveAll(produtos);
 
         System.out.println("Pedido criado com sucesso!\n");
+    }
+
+
+    public void insereFornecedor(){
+        System.out.print("Informe o nome do fornecedor: ");
+        String nome = scan.nextLine();
+        Fornecedor fornecedor = new Fornecedor(nome);
+        repositorioFor.save(fornecedor);
     }
 }

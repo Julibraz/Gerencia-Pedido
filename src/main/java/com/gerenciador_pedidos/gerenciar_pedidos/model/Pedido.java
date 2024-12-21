@@ -1,9 +1,6 @@
 package com.gerenciador_pedidos.gerenciar_pedidos.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,6 +8,7 @@ import java.util.List;
 @Entity
 public class Pedido {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate data;
 
@@ -19,7 +17,7 @@ public class Pedido {
 
     public Pedido() {}
 
-    public Pedido(Long id, LocalDate data) {
+    public Pedido(LocalDate data) {
         this.id = id;
         this.data = data;
     }
