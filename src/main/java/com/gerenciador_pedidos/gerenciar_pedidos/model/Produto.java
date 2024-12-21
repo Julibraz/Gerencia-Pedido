@@ -1,22 +1,39 @@
 package com.gerenciador_pedidos.gerenciar_pedidos.model;
 
+import ch.qos.logback.core.encoder.JsonEscapeUtil;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Produto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false, unique = true)
     private String nome;
+
     @Column(name = "valor")
     private Double preco;
 
+    @ManyToOne
+    @JoinColumn(name = "categoria_id") //cria a coluna que define a chave estrangeira
+    private Categoria categoria;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "produto_pedido", //cria a tabela de relacionamento(intermediaria)
+            joinColumns = @JoinColumn(name = "produto_id"), //coluna que refere a chave primaria de produto
+            inverseJoinColumns = @JoinColumn(name = "pedido_id")) //coluna que refere a chave primaria de pedido
+    private List<Pedido> pedidos;
+
+
     public Produto() {}
 
-    public Produto(String nome, Double preco) {
+    public Produto(String nome, Double preco, Categoria categoria) {
         this.nome = nome;
         this.preco = preco;
+        this.categoria = categoria;
     }
 
     public Long getId() {
@@ -27,8 +44,15 @@ public class Produto {
         return nome;
     }
 
-    public Double getPreço() {
+    public Double getPreco() {
         return preco;
     }
 
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public List<Pedido> getPedidos() {
+        return pedidos;
+    }
 }

@@ -11,7 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @Service
 public class Principal {
@@ -63,15 +67,40 @@ public class Principal {
         }
     }
 
-
-    public void insereProduto(){
+//continuar daqui
+public void insereProduto() {
+    try {
         System.out.print("Informe o nome do produto: ");
         String nome = scan.nextLine();
+
         System.out.print("Informe o preço: ");
         Double preco = scan.nextDouble();
-        Produto produto = new Produto(nome, preco);
+
+        System.out.print("Informe o ID da categoria: ");
+        Long id = scan.nextLong();
+
+        //limpa o buffer
+        scan.nextLine();
+
+        //faz a busca da categoria para verificar se ela existe
+        Optional<Categoria> categoriaOptional = repositorioCat.findById(id);
+        if (categoriaOptional.isEmpty()) {
+            System.out.println("Categoria inexistente.\n");
+            return;
+        }
+
+        Categoria categoria = categoriaOptional.get();
+
+        //cria e salva o produto
+        Produto produto = new Produto(nome, preco, categoria);
         repositorioProd.save(produto);
+
+        System.out.println("Produto inserido com sucesso!\n");
+    } catch (Exception e) {
+        System.out.println("Ocorreu um erro: " + e.getMessage());
     }
+}
+
 
     public void insereCategoria(){
         System.out.print("Informe o nome da categoria: ");
@@ -83,8 +112,37 @@ public class Principal {
     public void inserePedido(){
         System.out.print("Informe um id para o pedido: ");
         Long id = scan.nextLong();
+        scan.nextLine(); //para limpar o buffer
         LocalDate data = LocalDate.now();
+
+        System.out.println("Informe a lista de IDs dos produtos (separados por espaço): ");
+        String inputProdutos = scan.nextLine();
+        List<Long> produtoIds = Arrays.stream(inputProdutos.split(" "))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+
+        //busca os produtos pelo ID
+        List<Produto> produtos = repositorioProd.findAllById(produtoIds);
+
+        if(produtos.isEmpty()){
+            System.out.println("Produtos não foram encontrados.");
+            return;
+        }
+
         Pedido pedido = new Pedido(id, data);
+        pedido.setProdutos(produtos); //associa os produtos ao pedido
+
+
+        //atualizar a lista de pedidos nos produtos (relacionamento bidirecional)
+        for (Produto produto : produtos) {
+            produto.getPedidos().add(pedido);  //Adiciona o pedido ao produto
+        }
+
+        //salva o pedido
         repositorioPed.save(pedido);
+        //salva os produtos
+        repositorioProd.saveAll(produtos);
+
+        System.out.println("Pedido criado com sucesso!\n");
     }
 }
